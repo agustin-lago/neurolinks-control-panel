@@ -1,0 +1,57 @@
+/* --- Glows --- */
+.glow-accent { box-shadow: 0 0 40px rgba(0,153,255,0.22), 0 0 80px rgba(0,120,212,0.1); }
+.glow-gold   { box-shadow: 0 0 40px rgba(223,206,130,0.15), 0 0 80px rgba(223,206,130,0.06); }
+.glow-white  { box-shadow: 0 0 30px rgba(255,255,255,0.05); }
+
+/* --- Background utilities --- */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(0,153,255,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,153,255,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.bg-glow-accent { background: radial-gradient(ellipse, rgba(0,120,212,0.18) 0%, transparent 65%); }
+.bg-glow-blue   { background: radial-gradient(ellipse, rgba(0,180,216,0.14) 0%, transparent 65%); }
+.bg-glow-gold   { background: radial-gradient(ellipse, rgba(223,206,130,0.08) 0%, transparent 65%); }
+
+/* --- Text gradients --- */
+.text-gradient-gold {
+  background-image: linear-gradient(135deg, #dfce82, #f0e4a0, #c4b55e);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-accent {
+  background-image: linear-gradient(135deg, #48CAE4, #0099FF, #0078D4);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+/* =========================================================
+   5. CUSTOM UTILITIES
+========================================================= */
+
+/* Custom text colors (not in Tailwind theme) */
+.text-dim            { color: var(--text-dim); }
+.text-main           { color: var(--text-main); }
+.text-online         { color: var(--success); }
+.text-error-c        { color: var(--error); }
+.text-accent-clients { color: var(--accent-subtle); }
+.text-success        { color: var(--success); }
+.text-danger         { color: var(--error); }
+.text-warning        { color: var(--warning); }
+.text-info           { color: var(--info); }
+
+/* Custom backgrounds */
+.bg-accent-glass { background: rgba(0, 153, 255, 0.04); }
+
+/* Custom font size utilities */
+.small   { font-size: 0.875em; }
+.x-small { font-size: 0.7rem; }
+.ls-1    { letter-spacing: 1px; }
+

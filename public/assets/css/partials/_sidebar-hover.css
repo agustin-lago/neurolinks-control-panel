@@ -1,0 +1,63 @@
+/* Sidebar pill hover effect on Desktop */
+@media (min-width: 992px) {
+  .sidebar {
+    overflow: visible;
+  }
+  .sidebar-menu {
+    align-items: flex-start;
+  }
+  .sidebar-bottom {
+    align-items: flex-start;
+  }
+  .sidebar-item {
+    margin-left: 14px;
+    justify-content: flex-start;
+    padding-left: 13px;
+    width: 42px;
+    overflow: visible;
+    transition: width 0.2s ease-out, padding 0.2s ease-out, background-color 0.15s, border-radius 0.2s, box-shadow 0.2s;
+  }
+  .sidebar-item-text {
+    display: inline-block;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-left: 0;
+    transition: max-width 0.2s ease-out, opacity 0.15s ease-out, margin-left 0.2s ease-out;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .sidebar-item:hover {
+    width: auto;
+    min-width: 42px;
+    padding-right: 18px;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #0078D4, #0099FF);
+    box-shadow: 0 4px 16px rgba(0,120,212,0.4);
+    color: white;
+    z-index: 1010;
+  }
+  .sidebar-item:hover i {
+    color: white;
+  }
+  .sidebar-item:hover .sidebar-item-text {
+    max-width: 200px;
+    opacity: 1;
+    margin-left: 12px;
+  }
+  .sidebar-user-avatar {
+    margin-left: 17px;
+  }
+
+  /* Light Theme Overrides */
+  body[data-theme="light"] .sidebar-item:hover {
+    background: linear-gradient(135deg, #0057b3, #0070cc);
+    box-shadow: 0 4px 16px rgba(0, 100, 200, 0.4);
+    color: white !important;
+  }
+  body[data-theme="light"] .sidebar-item:hover i {
+    color: white !important;
+  }
+}

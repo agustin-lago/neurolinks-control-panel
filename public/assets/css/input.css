@@ -1,0 +1,48 @@
+/* =========================================================
+   NEUROLINKS CONTROL — Design System
+   Source: STYLE_BRIEF.md
+   Build: npx @tailwindcss/cli -i input.css -o styles.css
+========================================================= */
+
+@import "tailwindcss";
+
+@source "../../src/renderer/**/*.html";
+@source "../../src/renderer/**/*.js";
+
+/* ===== CUSTOM THEME (Tailwind v4) ===== */
+@theme {
+  --font-heading: "Montserrat", sans-serif;
+  --font-body:    "Poppins",    sans-serif;
+
+  /* Accent blue */
+  --color-accent:        #0078D4;
+  --color-accent-bright: #0099FF;
+  --color-accent-light:  #00B4D8;
+  --color-accent-sky:    #48CAE4;
+  --color-accent-pale:   #90E0EF;
+  --color-accent-subtle: #AFC8E8;
+  --color-accent-muted:  #7895B2;
+
+  /* Gold */
+  --color-gold:      #dfce82;
+  --color-gold-dark: #c4b55e;
+
+  /* Primary navy */
+  --color-primary:       #0A192F;
+  --color-primary-light: #102A43;
+
+  /* WhatsApp */
+  --color-whatsapp:      #25d366;
+  --color-whatsapp-dark: #1da851;
+}
+
+/* =========================================================
+   PARTIAL IMPORTS
+========================================================= */
+@import "./partials/_variables.css";
+@import "./partials/_theme-light.css";
+@import "./partials/_base.css";
+@import "./partials/_glassmorphism.css";
+@import "./partials/_utilities.css";
+@import "./partials/_components.css";
+@import "./partials/_sidebar-hover.css";

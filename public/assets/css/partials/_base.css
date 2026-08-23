@@ -1,0 +1,51 @@
+/* =========================================================
+   2. BASE STYLES
+========================================================= */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color-scheme: dark;
+}
+
+/* Fixed deep gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(160deg, #050A14 0%, #07111F 35%, #0A192F 65%, #0B2447 100%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-main);
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+* { box-sizing: border-box; }
+
+
+
+/* =========================================================
+   4. SCROLLBAR
+========================================================= */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #050A14; }
+::-webkit-scrollbar-thumb { background: #0078D4; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #0099FF; }
+

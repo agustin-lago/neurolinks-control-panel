@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Neurolinks - Panel de administración</title>
+  <link href="/assets/icons/favicon-32x32.png" rel="icon" type="image/png" sizes="32x32">
+  <link href="/assets/icons/favicon-16x16.png" rel="icon" type="image/png" sizes="16x16">
+  <link href="/assets/icons/favicon.ico" rel="shortcut icon">
+  <link href="/assets/icons/apple-touch-icon.png" rel="apple-touch-icon">
+  <link rel="manifest" href="/assets/manifest.json">
+  <meta name="theme-color" content="#07111F">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Neurolinks">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <style>
+    :root {
+      --font-heading: 'Montserrat', sans-serif;
+      --font-body:    'Poppins',    sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      font-family: var(--font-body);
+    }
+
+    #login-video {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 0;
+      filter: brightness(0.28) saturate(1.3);
+    }
+
+    .login-gradient {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background: linear-gradient(160deg,#050A14 0%,#07111F 35%,#0A192F 65%,#0B2447 100%);
+      opacity: 0.88;
+    }
+
+    .login-glows {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 25% 55%,rgba(0,120,212,0.14) 0%,transparent 58%),
+                  radial-gradient(ellipse at 78% 45%,rgba(0,180,216,0.08) 0%,transparent 58%);
+    }
+
+    #login-neural-bg {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      opacity: 0.22;
+    }
+
+    .login-card {
+      position: relative;
+      z-index: 10;
+      width: min(420px, 92vw);
+      background: rgba(10,25,47,0.55);
+      backdrop-filter: blur(28px) saturate(1.6);
+      -webkit-backdrop-filter: blur(28px) saturate(1.6);
+      border: 1px solid rgba(0,153,255,0.18);
+      border-radius: 1.25rem;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(0,153,255,0.06);
+      overflow: hidden;
+    }
+
+    .login-header {
+      padding: 36px 36px 28px;
+      text-align: center;
+      border-bottom: 1px solid rgba(0,153,255,0.08);
+    }
+
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: rgba(0,120,212,0.15);
+      border: 1px solid rgba(0,153,255,0.28);
+      margin-bottom: 16px;
+      box-shadow: 0 0 24px rgba(0,153,255,0.15);
+    }
+
+    .login-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e8f0fe;
+      margin: 0 0 6px;
+      letter-spacing: -0.01em;
+    }
+
+    .login-subtitle {
+      font-family: var(--font-heading);
+      font-size: 0.7rem;
+      color: rgba(175,200,232,0.45);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .login-body { padding: 28px 36px 32px; }
+
+    .login-input-wrap { position: relative; margin-bottom: 14px; }
+
+    .login-input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(175,200,232,0.22);
+      font-size: 0.95rem;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .login-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,153,255,0.16);
+      border-radius: 12px;
+      color: #e8f0fe;
+      font-family: var(--font-body);
+      font-size: 0.92rem;
+      padding: 13px 44px 13px 42px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .login-input:focus {
+      border-color: rgba(0,153,255,0.5);
+      box-shadow: 0 0 0 3px rgba(0,153,255,0.12);
+    }
+
+    .login-pw-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(175,200,232,0.4);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 0.95rem;
+      z-index: 2;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+
+    .login-pw-toggle:hover { color: rgba(175,200,232,0.75); }
+
+    .login-label {
+      font-size: 0.8rem;
+      color: rgba(175,200,232,0.4);
+      cursor: pointer;
+      user-select: none;
+      font-family: var(--font-body);
+    }
+
+    .login-error {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.22);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      color: #f87171;
+      margin-bottom: 16px;
+      font-family: var(--font-body);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-heading);
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: linear-gradient(135deg,#0078D4,#0099FF);
+      color: white;
+      letter-spacing: 0.01em;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(0,120,212,0.4);
+    }
+
+    .login-btn:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba(0,120,212,0.5);
+    }
+
+    .login-btn:active:not(:disabled) { transform: translateY(0); }
+
+    .login-footer {
+      padding: 14px 36px 18px;
+      text-align: center;
+      border-top: 1px solid rgba(0,153,255,0.06);
+    }
+
+    .login-footer-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.7rem;
+      color: rgba(175,200,232,0.28);
+      font-family: var(--font-heading);
+      letter-spacing: 0.03em;
+    }
+
+    /* ---- Light mode ---- */
+    body[data-theme="light"] #login-video {
+      filter: brightness(1.5) saturate(0.2);
+      opacity: 0.08;
+    }
+
+    body[data-theme="light"] .login-gradient {
+      background: linear-gradient(160deg, #f0f7ff 0%, #e4effc 35%, #d6e9f8 65%, #c8e0f5 100%);
+      opacity: 0.96;
+    }
+
+    body[data-theme="light"] .login-glows {
+      background: radial-gradient(ellipse at 25% 55%,rgba(0,120,212,0.07) 0%,transparent 58%),
+                  radial-gradient(ellipse at 78% 45%,rgba(0,180,216,0.04) 0%,transparent 58%);
+    }
+
+    body[data-theme="light"] #login-neural-bg { opacity: 0.10; }
+
+    body[data-theme="light"] .login-card {
+      background: rgba(255,255,255,0.75);
+      border-color: rgba(0,100,200,0.18);
+      box-shadow: 0 24px 60px rgba(0,60,140,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    body[data-theme="light"] .login-header { border-bottom-color: rgba(0,100,200,0.08); }
+
+    body[data-theme="light"] .login-logo {
+      background: rgba(0,100,200,0.08);
+      border-color: rgba(0,120,212,0.22);
+      box-shadow: 0 0 24px rgba(0,100,212,0.08);
+    }
+
+    body[data-theme="light"] .login-title  { color: #0D1B2A; }
+    body[data-theme="light"] .login-subtitle { color: rgba(13,27,42,0.38); }
+
+    body[data-theme="light"] .login-input {
+      background: rgba(0,0,0,0.04);
+      border-color: rgba(0,100,200,0.18);
+      color: #0D1B2A;
+    }
+
+    body[data-theme="light"] .login-input::placeholder { color: rgba(13,27,42,0.35); }
+
+    body[data-theme="light"] .login-input:focus {
+      border-color: rgba(0,100,200,0.45);
+      box-shadow: 0 0 0 3px rgba(0,100,200,0.10);
+    }
+
+    body[data-theme="light"] .login-input-icon { color: rgba(13,27,42,0.35); }
+    body[data-theme="light"] .login-pw-toggle  { color: rgba(13,27,42,0.35); }
+    body[data-theme="light"] .login-pw-toggle:hover { color: rgba(13,27,42,0.65); }
+    body[data-theme="light"] .login-label { color: rgba(13,27,42,0.45); }
+    body[data-theme="light"] .login-footer { border-top-color: rgba(0,100,200,0.06); }
+    body[data-theme="light"] .login-footer-text { color: rgba(13,27,42,0.28); }
+  </style>
+</head>
+
+<body data-theme="dark">
+
+  <!-- Apply stored theme immediately to avoid flash -->
+  <script>
+    try { document.body.dataset.theme = localStorage.getItem('theme') || 'dark'; } catch(e) {}
+  </script>
+
+  <video id="login-video" autoplay muted loop playsinline>
+    <source src="/assets/video-cover-2.mp4" type="video/mp4">
+  </video>
+
+  <div class="login-gradient"></div>
+  <div class="login-glows"></div>
+  <canvas id="login-neural-bg" aria-hidden="true"></canvas>
+
+  <!-- Login card -->
+  <div class="login-card">
+
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="bi bi-cpu-fill" style="font-size:1.7rem;background:linear-gradient(135deg,#0099FF,#48CAE4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;"></i>
+      </div>
+      <div class="login-title">Neurolinks Control</div>
+      <div class="login-subtitle">Panel de administración</div>
+    </div>
+
+    <div class="login-body">
+      <form id="login-form">
+
+        <div class="login-input-wrap">
+          <i class="bi bi-person login-input-icon"></i>
+          <input type="text" id="username-input" class="login-input" placeholder="Usuario" autofocus required autocomplete="username">
+        </div>
+
+        <div class="login-input-wrap">
+          <i class="bi bi-lock login-input-icon"></i>
+          <input type="password" id="password-input" class="login-input" placeholder="Contraseña" required autocomplete="current-password">
+          <button type="button" id="toggle-pw" class="login-pw-toggle" tabindex="-1">
+            <i class="bi bi-eye" id="toggle-pw-icon"></i>
+          </button>
+        </div>
+
+        <div style="display:flex;align-items:center;margin-bottom:16px;padding:0 2px;">
+          <input class="form-check-input" type="checkbox" id="remember-me" style="margin-right:8px;cursor:pointer;">
+          <label for="remember-me" class="login-label">Recordar sesión</label>
+        </div>
+
+        <div id="error-msg" class="login-error">
+          <i class="bi bi-exclamation-circle-fill"></i>
+          Usuario o contraseña incorrectos
+        </div>
+
+        <button type="submit" id="login-btn" class="login-btn">Ingresar</button>
+
+      </form>
+    </div>
+
+    <div class="login-footer">
+      <span class="login-footer-text">
+        <i class="bi bi-shield-lock" style="font-size:0.68rem;"></i>
+        Acceso restringido &middot; Solo personal autorizado
+      </span>
+    </div>
+
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+
+  <script>
+    document.getElementById('toggle-pw').onclick = () => {
+      const input = document.getElementById('password-input');
+      const icon  = document.getElementById('toggle-pw-icon');
+      const isPw  = input.type === 'password';
+      input.type  = isPw ? 'text' : 'password';
+      icon.className = isPw ? 'bi bi-eye-slash' : 'bi bi-eye';
+    };
+
+    const rememberEl = document.getElementById('remember-me');
+    rememberEl.checked = localStorage.getItem('rememberMe') === '1';
+
+    document.getElementById('login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const btn      = document.getElementById('login-btn');
+      const errorMsg = document.getElementById('error-msg');
+      const username = document.getElementById('username-input').value;
+      const password = document.getElementById('password-input').value;
+      const rememberMe = rememberEl.checked;
+
+      localStorage.setItem('rememberMe', rememberMe ? '1' : '0');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:tw-spin 0.75s linear infinite;vertical-align:middle;margin-right:8px;"></span>Ingresando...';
+      btn.style.opacity = '0.75';
+      errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, rememberMe })
+        });
+        if (res.ok) {
+          window.location.replace('/');
+        } else {
+          errorMsg.style.display = 'flex';
+          btn.disabled = false;
+          btn.textContent = 'Ingresar';
+          btn.style.opacity = '1';
+          document.getElementById('password-input').focus();
+        }
+      } catch {
+        errorMsg.style.display = 'flex';
+        btn.disabled = false;
+        btn.textContent = 'Ingresar';
+        btn.style.opacity = '1';
+      }
+    };
+
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) {
+        window.location.reload();
+      }
+    });
+  </script>
+
+  <!-- Neural background animation -->
+  <script>
+    (function() {
+      const canvas = document.getElementById('login-neural-bg');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const PARTICLE_COUNT = 100, MAX_DISTANCE = 150, SPEED = 0.4;
+
+      const resize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
+      resize();
+      new ResizeObserver(resize).observe(canvas);
+
+      const particles = Array.from({ length: PARTICLE_COUNT }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * SPEED,
+        vy: (Math.random() - 0.5) * SPEED,
+        size: Math.random() * 1.8 + 0.8,
+      }));
+
+      const draw = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const p of particles) {
+          p.x += p.vx; p.y += p.vy;
+          if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+          if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+        }
+        const light = document.body.dataset.theme === 'light';
+        const lineRgb = light ? '0,80,180' : '0,153,255';
+        const dotRgb  = light ? '0,100,200' : '72,202,228';
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist > MAX_DISTANCE) continue;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.strokeStyle = `rgba(${lineRgb},${(1 - dist / MAX_DISTANCE) * 0.22})`;
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+        for (const p of particles) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${dotRgb},0.40)`;
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      };
+      draw();
+    })();
+  </script>
+
+</body>
+</html>
