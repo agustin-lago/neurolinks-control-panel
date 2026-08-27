@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import JSZip from 'jszip';
 import { api } from '../../core/api';
 import { store, useStoreKey } from '../../core/store';
@@ -6,36 +6,24 @@ import { useParams, useNavigate } from 'react-router-dom';
 import ClientGrid from './components/ClientGrid';
 import ClientDetailPanel from './components/ClientDetailPanel';
 import ClientModals from './components/ClientModals';
-import { confirmAlert, successAlert, errorAlert } from '../../components/SweetAlert';
+import { confirmAlert } from '../../components/SweetAlert';
 import Skeleton from '../../components/Skeleton';
 
 const EMPTY_ARRAY = [];
 
-function getClientProjectIds(client) {
-  const ids = [];
-  if (Array.isArray(client.railway_project_ids)) ids.push(...client.railway_project_ids);
-  if (Array.isArray(client.linked_projects)) {
-    ids.push(...client.linked_projects.map(p => p.railway_project_id || p.proyecto_slug || p.id));
-  }
-  return [...new Set(ids.filter(Boolean).map(String))];
-}
-
 function ticketBelongsToClient(ticket, client) {
   const clientIds = (client.duplicate_client_ids || [client.id]).map(String);
-  const projectIds = getClientProjectIds(client);
-  return clientIds.includes(String(ticket.cliente_id)) || projectIds.includes(String(ticket.project_id));
+  return clientIds.includes(String(ticket.cliente_id));
 }
 
 export default function ClientsView({ navigate, isTab = false }) {
   // Shared data from global store — updates silently in background (no flicker)
   const clientsData = useStoreKey('clients', () => store.fetchClients());
-  const assistantsData = useStoreKey('assistants', () => store.fetchAssistants());
   const ticketsMetaData = useStoreKey('ticketsMeta', () => store.fetchTicketsMeta());
 
-  const loading = clientsData === null || assistantsData === null || ticketsMetaData === null;
+  const loading = clientsData === null || ticketsMetaData === null;
 
   const clients = clientsData || EMPTY_ARRAY;
-  const assistants = assistantsData || EMPTY_ARRAY;
   const ticketsMeta = ticketsMetaData || EMPTY_ARRAY;
 
   // Admins (not in shared store, local to this view)
@@ -60,7 +48,6 @@ export default function ClientsView({ navigate, isTab = false }) {
       navigateRouter(`/clientes`);
     }
   };
-  const [clientProjects, setClientProjects] = useState([]);
   const [clientTickets, setClientTickets] = useState([]);
   const [isLoadingClientDetails, setIsLoadingClientDetails] = useState(false);
 
@@ -80,63 +67,6 @@ export default function ClientsView({ navigate, isTab = false }) {
   const [formVencimiento, setFormVencimiento] = useState('');
   const [formSubscriptionStatus, setFormSubscriptionStatus] = useState('manual');
   const [formSubscriptionSource, setFormSubscriptionSource] = useState('control');
-
-  // Link Assistant Modal
-  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
-  const [templates, setTemplates] = useState([]);
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
-  const [deployingTemplate, setDeployingTemplate] = useState(false);
-
-  const findSelectedClient = () => clients.find(c => String(c.id) === String(selectedClientId));
-
-  const hasReachedClientProjectLimit = (client) => client && client.available_slots !== null && client.available_slots <= 0;
-
-  const handleOpenNewInstanceModal = async () => {
-    const currentClient = findSelectedClient();
-    if (hasReachedClientProjectLimit(currentClient)) {
-      window.showToast?.('El cliente ya alcanzo el cupo de instancias de su plan', 'warning');
-      return;
-    }
-    setIsLinkModalOpen(true);
-    setLoadingTemplates(true);
-    try {
-      const data = await api.searchTemplates("");
-      let filtered = (data || []).filter(t => t.id === '7ee93cd3-5d50-444e-9c47-1617446449d3');
-      if (filtered.length === 0) {
-        filtered = [{ id: '7ee93cd3-5d50-444e-9c47-1617446449d3', name: 'Backoffice - Official Meta API' }];
-      }
-      setTemplates(filtered);
-    } catch (error) {
-      console.error("Error loading templates:", error);
-      if (window.showToast) window.showToast("Error al conectar con Railway", "danger");
-    } finally {
-      setLoadingTemplates(false);
-    }
-  };
-
-  const handleConfirmDeployForClient = async (templateId) => {
-    if (!selectedClientId || !templateId) return;
-    setDeployingTemplate(true);
-    try {
-      const result = await api.deployTemplate(templateId, selectedClientId);
-      if (result.success) {
-        await successAlert('El nuevo proyecto aparecera vinculado a este cliente en unos momentos.', 'Despliegue iniciado');
-        store.invalidate('assistants');
-        store.fetchAssistants(true).catch(() => {});
-        store.invalidate('clients');
-        store.fetchClients(true).catch(() => {});
-        setIsLinkModalOpen(false);
-        fetchClientDetails(selectedClientId);
-      } else {
-        await errorAlert(result.error || 'Respuesta desconocida', 'Error al desplegar');
-      }
-    } catch (error) {
-      console.error("Error in handleConfirmDeployForClient:", error);
-      await errorAlert('No se pudo iniciar el despliegue del template.', 'Error critico');
-    } finally {
-      setDeployingTemplate(false);
-    }
-  };
 
   // Load admins once on mount
   useEffect(() => {
@@ -175,7 +105,6 @@ export default function ClientsView({ navigate, isTab = false }) {
 
     if (!clientId) {
       detailsClientIdRef.current = null;
-      setClientProjects([]);
       setClientTickets([]);
       setIsLoadingClientDetails(false);
       return;
@@ -186,25 +115,18 @@ export default function ClientsView({ navigate, isTab = false }) {
 
     if (clientChanged) {
       setIsLoadingClientDetails(true);
-      setClientProjects([]);
       setClientTickets([]);
     }
 
     try {
-      const [projIds, ticketsRes] = await Promise.all([
-        api.getClientProjects(clientId) || [],
-        api.getTickets({ cliente_id: clientId, limit: 500 }) || {}
-      ]);
+      const ticketsRes = await api.getTickets({ cliente_id: clientId, limit: 500 }) || {};
       if (requestId !== detailsRequestRef.current) return;
 
-      const normalizedProjIds = (projIds || []).map(String);
-      setClientProjects(normalizedProjIds);
 
       const allTickets = ticketsRes?.data || [];
       const supportTickets = allTickets.filter(t => t.tipo === 'Soporte');
       setClientTickets(supportTickets);
 
-      const linked = assistants.filter(p => normalizedProjIds.includes(String(p.id)));
 
       if (requestId !== detailsRequestRef.current) return;
       setIsLoadingClientDetails(false);
@@ -218,7 +140,7 @@ export default function ClientsView({ navigate, isTab = false }) {
 
   useEffect(() => {
     fetchClientDetails(selectedClientId);
-  }, [selectedClientId, assistants, clientsData, ticketsMetaData]);
+  }, [selectedClientId, ticketsMetaData]);
 
   // Layout View Switcher removed
 
@@ -232,25 +154,6 @@ export default function ClientsView({ navigate, isTab = false }) {
     if (normalized.includes('enterprise')) return 'badge-status-warning';
     if (normalized.includes('baja')) return 'badge-status-secondary';
     return 'badge-status-secondary';
-  };
-
-  const getStatusIcon = (status) => {
-    if (!status) return 'bi-circle';
-    switch (status.toLowerCase()) {
-      case 'online': return 'bi-check-circle-fill text-emerald-400';
-      case 'error': return 'bi-exclamation-circle-fill text-red-400';
-      default: return 'bi-arrow-repeat text-yellow-400';
-    }
-  };
-
-  const getStatusColor = (status) => {
-    if (!status) return 'secondary';
-    switch (status.toLowerCase()) {
-      case 'online': return 'success';
-      case 'error': return 'danger';
-      case 'checking': return 'warning';
-      default: return 'secondary';
-    }
   };
 
   // CSV Exporter
@@ -305,43 +208,11 @@ export default function ClientsView({ navigate, isTab = false }) {
     try {
       const zip = new JSZip();
 
-      // Procesar clientes en paralelo para mayor velocidad
-      await Promise.all(filtered.map(async (client) => {
-        let content = `CREDENCIALES DE ACCESO:\n- Usuario: ${client.admin_user || ''}\n- Contraseña: ${client.admin_pass || ''}\n\nACCESO AL BACKOFFICE:\n`;
-
-        try {
-          const projIds = await api.getClientProjects(client.id);
-          const linkedProjects = assistants.filter(p => (projIds || []).includes(p.id));
-
-          // Procesar proyectos de este cliente en paralelo
-          await Promise.all(linkedProjects.map(async (project) => {
-            let hasServices = false;
-            if (project.services && project.services.length > 0) {
-              await Promise.all(project.services.map(async (service) => {
-                hasServices = true;
-                try {
-                  const domains = await api.getServiceDomains(service.projectId, service.environmentId, service.id, service.railwayWorkspaceKey);
-                  let dom = domains?.customDomains?.[0]?.domain || domains?.serviceDomains?.[0]?.domain;
-                  if (dom) {
-                    if (!dom.startsWith('http')) dom = 'https://' + dom;
-                    content += `- Backoffice - ${project.name}: ${dom}\n`;
-                  }
-                } catch (e) {
-                  // Ignorar errores de dominio
-                }
-              }));
-            }
-            if (!hasServices) {
-              content += `- Backoffice - ${project.name}: Sin servicios configurados\n`;
-            }
-          }));
-        } catch (e) {
-          // Ignorar errores de proyectos del cliente
-        }
-
+      filtered.forEach((client) => {
+        const content = `CREDENCIALES DE ACCESO:\n- Usuario: ${client.admin_user || ''}\n- Contrasena: ${client.admin_pass || ''}\n`;
         const safeName = (client.nombre || 'Cliente').replace(/[^a-zA-Z0-9_\-]/g, '_');
         zip.file(`Credenciales_${safeName}.txt`, content);
-      }));
+      });
 
       const contentBlob = await zip.generateAsync({ type: 'blob' });
       const url = window.URL.createObjectURL(contentBlob);
@@ -528,7 +399,7 @@ export default function ClientsView({ navigate, isTab = false }) {
 
 
   const handleDeleteClient = async (id) => {
-    if (!(await confirmAlert('¿Deseas eliminar este cliente?<br><br>Se perderán sus vínculos técnicos.', 'Eliminar Cliente', 'Eliminar Definitivamente', 'Cancelar'))) return;
+    if (!(await confirmAlert('Deseas eliminar este cliente?<br><br>Se perderan sus datos asociados.', 'Eliminar Cliente', 'Eliminar Definitivamente', 'Cancelar'))) return;
     try {
       await api.deleteClient(id);
       window.showToast('Cliente eliminado', 'warning');
@@ -537,43 +408,11 @@ export default function ClientsView({ navigate, isTab = false }) {
       }
       store.invalidate('clients');
       store.fetchClients(true).catch(() => {});
-      store.invalidate('assistants');
-      store.fetchAssistants(true).catch(() => {});
     } catch (err) {
       window.showToast('Error al eliminar cliente', 'danger');
     }
   };
 
-  const handleDeleteGhostRecord = async (rowId) => {
-    if (!rowId) return;
-    const confirmDelete = await confirmAlert(
-      '¿Seguro que querés eliminar este registro huérfano de la base de datos?',
-      'Eliminar Registro Huérfano',
-      'Eliminar',
-      'Cancelar'
-    );
-    if (!confirmDelete) return;
-
-    try {
-      await api.deleteGhostProjectRecord(rowId);
-      if (window.showToast) window.showToast('Registro eliminado exitosamente', 'success');
-      fetchClientDetails(selectedClientId);
-      store.fetchClients(true).catch(() => {});
-    } catch (err) {
-      if (window.showToast) window.showToast('Error al eliminar registro', 'danger');
-    }
-  };
-
-  // Redeploy helper
-  const handleRedeploy = async (serviceId, environmentId, railwayWorkspaceKey = null) => {
-    if (!(await confirmAlert('¿Deseas reiniciar este servicio?', 'Reiniciar Servicio'))) return;
-    try {
-      await api.redeployService(serviceId, environmentId, railwayWorkspaceKey);
-      window.showToast('Reinicio solicitado correctamente', 'success');
-    } catch (err) {
-      window.showToast('Error al solicitar reinicio', 'danger');
-    }
-  };
   // Billing modal and functions removed as billing system is eradicated
 
 
@@ -585,18 +424,6 @@ export default function ClientsView({ navigate, isTab = false }) {
     window.dispatchEvent(new CustomEvent('local-storage-sync', { detail: { key: 'currentChatTicketBackView', newValue: 'clients' } }));
     
     navigate('tickets');
-  };
-
-  const handleDeleteTicket = async (ticketId) => {
-    if (!(await confirmAlert('¿Seguro que querés eliminar este ticket?', 'Eliminar Ticket', 'Eliminar', 'Cancelar'))) return;
-    try {
-      await api.deleteTicket(ticketId);
-      window.showToast('Ticket eliminado', 'warning');
-      fetchClientDetails(selectedClientId);
-      store.invalidate('ticketsMeta');
-    } catch (err) {
-      window.showToast('Error al eliminar ticket', 'danger');
-    }
   };
 
   const getFilteredClients = () => {
@@ -655,29 +482,15 @@ export default function ClientsView({ navigate, isTab = false }) {
       {selectedClientId ? (
         <ClientDetailPanel
           selectedClientId={selectedClientId}
-          setSelectedClientId={setSelectedClientId}
           clients={clients}
           admins={admins}
-          assistants={assistants}
-          ticketsMeta={ticketsMeta}
-          planCatalog={planCatalog}
           getPlanBadgeClass={getPlanBadgeClass}
-          getStatusIcon={getStatusIcon}
-          getStatusColor={getStatusColor}
           window={window}
-          navigate={navigate}
           handleOpenEditClient={handleOpenEditClient}
           handleDeleteClient={handleDeleteClient}
-          handleDeleteGhostRecord={handleDeleteGhostRecord}
-          clientProjects={clientProjects}
           isLoadingClientDetails={isLoadingClientDetails}
-          handleOpenNewInstanceModal={handleOpenNewInstanceModal}
-          handleRedeploy={handleRedeploy}
-          loadingPlans={loadingPlans}
-          api={api}
           clientTickets={clientTickets}
           handleOpenChat={handleOpenChat}
-          handleDeleteTicket={handleDeleteTicket}
         />
       ) : (
         <ClientGrid
@@ -693,11 +506,9 @@ export default function ClientsView({ navigate, isTab = false }) {
           handleImportCSV={handleImportCSV}
           handleOpenNewClientModal={handleOpenNewClientModal}
           filteredClients={filteredClients}
-          assistants={assistants}
           ticketsMeta={ticketsMeta}
           getPlanBadgeClass={getPlanBadgeClass}
           setSelectedClientId={setSelectedClientId}
-          window={window}
         />
       )}
 
@@ -733,16 +544,6 @@ export default function ClientsView({ navigate, isTab = false }) {
         setFormSubscriptionStatus={setFormSubscriptionStatus}
         formSubscriptionSource={formSubscriptionSource}
         setFormSubscriptionSource={setFormSubscriptionSource}
-        isLinkModalOpen={isLinkModalOpen}
-        setIsLinkModalOpen={setIsLinkModalOpen}
-        handleOpenNewInstanceModal={handleOpenNewInstanceModal}
-        getStatusColor={getStatusColor}
-        loadingTemplates={loadingTemplates}
-        templates={templates}
-        deployingTemplate={deployingTemplate}
-        handleConfirmDeployForClient={handleConfirmDeployForClient}
-        assistants={assistants}
-        clientProjects={clientProjects}
       />
     </div>
   );

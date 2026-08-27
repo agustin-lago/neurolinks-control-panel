@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSmartRefresh } from '../../../contexts/SmartRefreshContext';
+import { useSmartRefresh } from '../../../../contexts/SmartRefreshContext';
 
 export default function OnboardingModal({ projectId, projectName, onClose, api }) {
   const [loading, setLoading] = useState(true);

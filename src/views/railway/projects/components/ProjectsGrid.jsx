@@ -20,7 +20,6 @@ export default function ProjectsGrid({
   getStatusColor,
   projectClientMap,
   setSelectedProjectId,
-  handleDeployNewProject,
   setOnboardingProjectId,
   allOnboardings = {}
 }) {
@@ -124,15 +123,8 @@ export default function ProjectsGrid({
                 onChange={(e) => setSelectedWorkspaceFilter(e.target.value)}
                 title="Filtrar por cuenta de Railway"
               >
-                <option value="">Todas las cuentas</option>
-                <option value="1" className="bg-dark text-white">Cuenta 1</option>
                 <option value="2" className="bg-dark text-white">Cuenta 2</option>
               </select>
-              {selectedWorkspaceFilter && (
-                <button className="btn btn-outline-secondary btn-sm shrink-0" onClick={() => setSelectedWorkspaceFilter('')} title="Limpiar filtro de cuenta">
-                  <i className="bi bi-x-lg"></i>
-                </button>
-              )}
             </div>
             <div className="flex flex-row items-center gap-1" style={{ width: '180px' }}>
               <select
@@ -180,10 +172,6 @@ export default function ProjectsGrid({
                 <span className="assistant-btn-label">Actualizar Todo</span>
               </button>
             )}
-            <button className="btn btn-success btn-sm flex items-center" onClick={handleDeployNewProject}>
-              <i className="bi bi-plus-lg assistant-btn-icon"></i>
-              <span className="assistant-btn-label">Nuevo Proyecto</span>
-            </button>
           </div>
         </div>
       </div>

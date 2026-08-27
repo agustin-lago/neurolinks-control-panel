@@ -14,11 +14,9 @@ export default function ClientGrid({
   handleImportCSV,
   handleOpenNewClientModal,
   filteredClients,
-  assistants,
   ticketsMeta,
   getPlanBadgeClass,
-  setSelectedClientId,
-  window
+  setSelectedClientId
 }) {
   return (
     <div id="clients-grid-panel">
@@ -125,11 +123,9 @@ export default function ClientGrid({
               client={client}
               index={idx}
               admins={admins}
-              assistants={assistants}
               ticketsMeta={ticketsMeta}
               getPlanBadgeClass={getPlanBadgeClass}
               setSelectedClientId={setSelectedClientId}
-              window={window}
             />
           ))
         )}

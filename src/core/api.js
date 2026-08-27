@@ -83,9 +83,6 @@ export const api = {
   searchTemplates: (query) =>
     _fetch(`/api/templates?q=${encodeURIComponent(query || '')}`),
 
-  deployTemplate: (templateId, clientId) =>
-    _post(`/api/templates/${templateId}/deploy`, { clientId }),
-
   // --------------------------------------------------
   // SERVICES
   // --------------------------------------------------

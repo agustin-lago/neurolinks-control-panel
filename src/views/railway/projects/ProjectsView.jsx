@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../core/api';
-import { store, useStoreKey } from '../../core/store';
+import { api } from '../../../core/api';
+import { store, useStoreKey } from '../../../core/store';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSmartRefresh } from '../../contexts/SmartRefreshContext';
+import { useSmartRefresh } from '../../../contexts/SmartRefreshContext';
 import ProjectsGrid from './components/ProjectsGrid';
 import ProjectDetailPanel from './components/ProjectDetailPanel';
 import OnboardingModal from './components/OnboardingModal';
-import { confirmAlert, successAlert, errorAlert } from '../../components/SweetAlert';
-import Skeleton from '../../components/Skeleton';
+import { confirmAlert } from '../../../components/SweetAlert';
+import Skeleton from '../../../components/Skeleton';
 
-export default function ProjectsView({ navigate, isTab = false }) {
+export default function ProjectsView({ navigate, isTab = false, basePath = '/proyectos' }) {
   // Shared data from global store - instant if already cached from another view
   const assistantsData = useStoreKey('assistants', () => store.fetchAssistants());
   const clientsData    = useStoreKey('clients',    () => store.fetchClients());
@@ -31,7 +31,7 @@ export default function ProjectsView({ navigate, isTab = false }) {
   const [isListView, setIsListView] = useState(() => window.innerWidth > 600);
   const [search, setSearch] = useState('');
   const [selectedClientFilter, setSelectedClientFilter] = useState('');
-  const [selectedWorkspaceFilter, setSelectedWorkspaceFilter] = useState('');
+  const [selectedWorkspaceFilter, setSelectedWorkspaceFilter] = useState('2');
 
   useEffect(() => {
     const handleResize = () => setIsListView(window.innerWidth > 600);
@@ -55,14 +55,17 @@ export default function ProjectsView({ navigate, isTab = false }) {
 
   // Selected assistant detail state
   const { '*': currentPath } = useParams();
-  const selectedProjectId = currentPath ? currentPath.split('/')[0] : null;
+  const normalizedPath = currentPath === 'proyectos'
+    ? null
+    : (currentPath?.startsWith('proyectos/') ? currentPath.slice('proyectos/'.length) : currentPath);
+  const selectedProjectId = normalizedPath ? normalizedPath.split('/')[0] : null;
   const navigateRouter = useNavigate();
 
   const setSelectedProjectId = (id) => {
     if (id) {
-      navigateRouter(`/proyectos/${id}`);
+      navigateRouter(`${basePath}/${id}`);
     } else {
-      navigateRouter(`/proyectos`);
+      navigateRouter(basePath);
     }
   };
   const [selectedProject, setSelectedProject] = useState(null);
@@ -318,39 +321,6 @@ export default function ProjectsView({ navigate, isTab = false }) {
     }
   };
 
-  // Deploy New Project via SweetAlert2
-  const handleDeployNewProject = async () => {
-    const confirmed = await confirmAlert(
-      'Se aprovisionará una instancia dedicada de Backoffice en Railway de forma automática. ¿Deseas continuar?',
-      'Despliegue Instantáneo',
-      'Confirmar despliegue',
-      'Cancelar',
-      'btn btn-success'
-    );
-    
-    if (confirmed) {
-      if (window.showActionSpinner) window.showActionSpinner("Desplegando nueva instancia...");
-      try {
-        // ID of the Backoffice Template
-        const templateId = '7ee93cd3-5d50-444e-9c47-1617446449d3';
-        const result = await api.deployTemplate(templateId);
-        
-        if (result.success) {
-          successAlert("El nuevo proyecto aparecerá en la lista en unos momentos.", "Despliegue iniciado");
-          store.invalidate('assistants');
-          store.fetchAssistants(true).catch(() => {});
-        } else {
-          errorAlert(result.error || "Respuesta desconocida", "Error al desplegar");
-        }
-      } catch (error) {
-        console.error("Error al desplegar:", error);
-        errorAlert("Ocurrió un error crítico al intentar desplegar el template.");
-      } finally {
-        if (window.hideActionSpinner) window.hideActionSpinner();
-      }
-    }
-  };
-
   // Rename Project
   const handleOpenRenameProject = () => {
     if (!selectedProject) return;
@@ -533,7 +503,6 @@ export default function ProjectsView({ navigate, isTab = false }) {
           getStatusColor={getStatusColor}
           projectClientMap={projectClientMap}
           setSelectedProjectId={setSelectedProjectId}
-          handleDeployNewProject={handleDeployNewProject}
           setOnboardingProjectId={setOnboardingProjectId}
           allOnboardings={allOnboardings}
         />

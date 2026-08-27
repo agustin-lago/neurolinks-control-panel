@@ -24,12 +24,6 @@ export default function ManagementView({ supportUnreadCount = 0 }) {
 
         <span className="text-[var(--text-dim)] opacity-50 mb-3 font-light shrink-0">|</span>
 
-        <NavLink to="/proyectos" className={getTabClass('/proyectos')}>
-          <i className="bi bi-cpu"></i> Proyectos
-        </NavLink>
-
-        <span className="text-[var(--text-dim)] opacity-50 mb-3 font-light shrink-0">|</span>
-
         <NavLink to="/clientes" className={getTabClass('/clientes')}>
           <i className="bi bi-people"></i> Clientes
         </NavLink>

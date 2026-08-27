@@ -1,5 +1,4 @@
 import React from 'react';
-import Skeleton from '../../../components/Skeleton';
 
 export default function ClientModals({
   isClientModalOpen,
@@ -32,17 +31,7 @@ export default function ClientModals({
   formSubscriptionStatus,
   setFormSubscriptionStatus,
   formSubscriptionSource,
-  setFormSubscriptionSource,
-
-  isLinkModalOpen,
-  setIsLinkModalOpen,
-
-  loadingTemplates,
-  templates,
-  deployingTemplate,
-  handleConfirmDeployForClient,
-  assistants,
-  clientProjects
+  setFormSubscriptionSource
 }) {
   const planOptions = Array.isArray(planCatalog) ? planCatalog.filter(plan => plan?.nombre) : [];
   const ensurePersonalizado = planOptions.some(plan => String(plan.nombre || '').toLowerCase() === 'personalizado')
@@ -190,67 +179,6 @@ export default function ClientModals({
         </div>
       )}
 
-      {/* MODAL CREAR PROYECTO OVERLAY */}
-      {isLinkModalOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="glass-card w-full max-w-4xl rounded-xl border border-[var(--border-light)] shadow-2xl flex flex-col max-h-[90vh]">
-            <div className="p-4 border-b border-[var(--border-light)] flex justify-between items-center  shrink-0">
-              <h3 className="font-bold text-[var(--text-main)] text-lg md:text-xl">
-                <i className={`bi bi-rocket-takeoff mr-2 text-accent`}></i>
-                Crear Proyecto para el Cliente
-              </h3>
-              <button type="button" className="text-[var(--text-dim)] hover:text-[var(--text-main)] transition-colors" onClick={() => setIsLinkModalOpen(false)}>
-                <i className="bi bi-x-lg text-lg"></i>
-              </button>
-            </div>
-            <div className="p-6 overflow-y-auto custom-scrollbar flex flex-col gap-4 min-h-0">
-                  {loadingTemplates ? (
-                    <div className="flex flex-col gap-4 py-2">
-                      <Skeleton variant="card" className="h-24 w-full" />
-                      <Skeleton variant="card" className="h-24 w-full" />
-                    </div>
-                  ) : templates.length === 0 ? (
-                    <div className="text-gray-500 text-sm text-center py-12 italic">No se encontraron plantillas disponibles.</div>
-                  ) : (
-                    <div className="flex flex-col gap-4 py-2">
-                      {templates.map(t => (
-                        <div key={t.id} className="p-4 sm:p-6 rounded-xl border border-[var(--border-light)]  relative overflow-hidden transition-all hover:bg-white/10">
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <div className="p-3 rounded-xl bg-info/10 border border-info/20 text-info text-2xl">
-                                <i className="bi bi-rocket-takeoff-fill"></i>
-                              </div>
-                              <div>
-                                <h6 className="font-bold text-[var(--text-main)] text-lg mb-1">{t.name}</h6>
-                                <p className="text-xs text-[var(--text-dim)] mb-0">Instancia dedicada con API oficial de META</p>
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="btn btn-success btn-sm px-4 py-2 font-bold rounded-lg flex items-center gap-2 shadow-lg shadow-green-500/20"
-                              disabled={deployingTemplate}
-                              onClick={() => handleConfirmDeployForClient(t.id)}
-                            >
-                              {deployingTemplate ? (
-                                <>
-                                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                  Desplegando...
-                                </>
-                              ) : (
-                                <>
-                                  <i className="bi bi-cloud-upload"></i>Desplegar y Vincular
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

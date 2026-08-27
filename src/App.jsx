@@ -4,14 +4,12 @@ import { api } from './core/api';
 import { store, useStoreKey } from './core/store';
 import useLocalStorage from './hooks/useLocalStorage';
 import DashboardView from './views/dashboard/DashboardView';
-import ProjectsView from './views/projects/ProjectsView';
 import AuditView from './views/audit/AuditView';
 import ClientsView from './views/clients/ClientsView';
 import BillingView from './views/billing/BillingView';
 import SettingsView from './views/settings/SettingsView';
 import ActivityView from './views/activity/ActivityView';
 import TicketsView from './views/tickets/TicketsView';
-import DeployProject from './views/deploy/DeployProject';
 import ManagementView from './views/management/ManagementView';
 import LogsView from './views/logs/LogsView';
 import SupabaseView from './views/supabase/SupabaseView';
@@ -74,7 +72,7 @@ export default function App() {
   useEffect(() => {
     window.navigate = legacyNavigate;
     window.openDeployModal = () => {
-      navigate('/deploy');
+      navigate('/railway/proyectos');
       setIsMobileSidebarOpen(false);
     };
     document.body.classList.remove('app-preload');
@@ -275,7 +273,6 @@ export default function App() {
       {/* Rutas principales de Gestión envueltas en ManagementView */}
       <Route element={<ManagementView navigate={legacyNavigate} supportUnreadCount={totalUnreadTickets} />}>
         <Route path="/dashboard" element={<DashboardView navigate={legacyNavigate} />} />
-        <Route path="/proyectos/*" element={<ProjectsView isTab={true} navigate={legacyNavigate} />} />
         <Route path="/clientes/*" element={<ClientsView isTab={true} navigate={legacyNavigate} />} />
         <Route path="/facturacion/*" element={<BillingView isTab={true} navigate={legacyNavigate} />} />
         <Route path="/soporte/*" element={<TicketsView isTab={true} navigate={legacyNavigate} />} />
@@ -285,8 +282,9 @@ export default function App() {
       <Route path="/audit" element={<AuditView navigate={legacyNavigate} />} />
       <Route path="/logs" element={<LogsView navigate={legacyNavigate} />} />
       <Route path="/supabase" element={<SupabaseView navigate={legacyNavigate} />} />
-      <Route path="/railway" element={<RailwayView navigate={legacyNavigate} />} />
-      <Route path="/deploy" element={<DeployProject navigate={legacyNavigate} />} />
+      <Route path="/railway/*" element={<RailwayView navigate={legacyNavigate} />} />
+      <Route path="/proyectos/*" element={<Navigate to={`/railway${location.pathname}`} replace />} />
+      <Route path="/deploy" element={<Navigate to="/railway/proyectos" replace />} />
       <Route path="/meta_onboarding" element={<MetaOnboardingView navigate={legacyNavigate} />} />
       <Route path="/whatsapp_sessions" element={<WhatsappSessionsView navigate={legacyNavigate} />} />
       <Route path="/settings" element={<SettingsView navigate={legacyNavigate} theme={theme} toggleTheme={toggleTheme} />} />

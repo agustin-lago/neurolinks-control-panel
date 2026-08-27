@@ -1,23 +1,12 @@
-const RAILWAY_TOKEN = process.env.RAILWAY_TOKEN;
-const RAILWAY_TOKEN_TEMPLATE = process.env.RAILWAY_TOKEN_TEMPLATE || RAILWAY_TOKEN;
-const RAILWAY_TOKEN_TEMPLATE_1 = process.env.RAILWAY_TOKEN_TEMPLATE_1 || RAILWAY_TOKEN_TEMPLATE;
-const RAILWAY_TOKEN_TEMPLATE_2 = process.env.RAILWAY_TOKEN_TEMPLATE_2 || RAILWAY_TOKEN_TEMPLATE;
-const RAILWAY_TEMPLATE_WORKSPACE_ID = process.env.RAILWAY_TEMPLATE_WORKSPACE_ID;
-const RAILWAY_TEMPLATE_WORKSPACE_ID_1 = process.env.RAILWAY_TEMPLATE_WORKSPACE_ID_1 || RAILWAY_TEMPLATE_WORKSPACE_ID;
+const RAILWAY_TOKEN_TEMPLATE_2 = process.env.RAILWAY_TOKEN_TEMPLATE_2;
+const RAILWAY_TOKEN = RAILWAY_TOKEN_TEMPLATE_2;
+const RAILWAY_TOKEN_TEMPLATE = RAILWAY_TOKEN_TEMPLATE_2;
 const RAILWAY_TEMPLATE_WORKSPACE_ID_2 = process.env.RAILWAY_TEMPLATE_WORKSPACE_ID_2;
 const RAILWAY_TEMPLATE_WORKSPACE_MAX_PROJECTS = Number(process.env.RAILWAY_TEMPLATE_WORKSPACE_MAX_PROJECTS || 100);
 const RAILWAY_API = process.env.RAILWAY_API || "https://backboard.railway.app/graphql/v2";
 
 function getTemplateWorkspaces() {
   const candidates = [
-    {
-      key: '1',
-      name: 'Workspace principal',
-      workspaceId: RAILWAY_TEMPLATE_WORKSPACE_ID_1,
-      token: RAILWAY_TOKEN_TEMPLATE_1,
-      projectToken: RAILWAY_TOKEN,
-      maxProjects: RAILWAY_TEMPLATE_WORKSPACE_MAX_PROJECTS
-    },
     {
       key: '2',
       name: 'Workspace secundario',
@@ -271,7 +260,7 @@ const railwayService = {
     const workspaces = getTemplateWorkspaces();
     const targets = workspaces.length > 0
       ? workspaces
-      : [{ key: '1', name: 'Workspace principal', workspaceId: null, projectToken: RAILWAY_TOKEN }];
+      : [{ key: '2', name: 'Workspace secundario', workspaceId: RAILWAY_TEMPLATE_WORKSPACE_ID_2 || null, projectToken: RAILWAY_TOKEN_TEMPLATE_2 }];
     const projects = [];
     const seenProjectIds = new Set();
 
@@ -389,7 +378,7 @@ const railwayService = {
     const workspaces = getTemplateWorkspaces();
     const targets = workspaces.length > 0
       ? workspaces
-      : [{ projectToken: RAILWAY_TOKEN }];
+      : [{ projectToken: RAILWAY_TOKEN_TEMPLATE_2 }];
     const map = {};
 
     for (const workspace of targets) {
@@ -687,74 +676,6 @@ const railwayService = {
     `;
     const result = await railwayQuery(query, { query: queryText || "", first: 20 }, RAILWAY_TOKEN_TEMPLATE);
     return result.data?.templates?.edges.map(e => e.node) || [];
-  },
-
-  async deployTemplate(templateId) {
-    try {
-      const targetWorkspace = await getAvailableTemplateWorkspace();
-
-      // 1. Primero obtenemos la configuración serializada del template
-      const getConfigQuery = `
-        query template($id: String!) {
-          template(id: $id) {
-            id
-            name
-            serializedConfig
-          }
-        }
-      `;
-      const configRes = await railwayQuery(getConfigQuery, { id: templateId }, targetWorkspace.token);
-      const template = configRes.data?.template;
-
-      if (!template || !template.serializedConfig) {
-        throw new Error("No se pudo obtener la configuración del template.");
-      }
-
-      // 2. Ejecutamos la mutación de despliegue V2
-      // El campo serializedConfig devuelto por el query suele ser el objeto que espera la mutación
-      const deployMutation = `
-        mutation templateDeployV2($input: TemplateDeployV2Input!) {
-          templateDeployV2(input: $input) {
-            projectId
-          }
-        }
-      `;
-
-      const variables = {
-        input: {
-          templateId: template.id,
-          serializedConfig: template.serializedConfig
-        }
-      };
-
-      if (targetWorkspace.workspaceId) {
-        variables.input.workspaceId = targetWorkspace.workspaceId;
-      }
-
-      // Usar el projectToken (token del workspace) para ejecutar el despliegue
-      const result = await railwayQuery(deployMutation, variables, targetWorkspace.projectToken);
-
-      if (result.errors) {
-        throw new Error(result.errors[0].message);
-      }
-
-      return {
-        success: true,
-        projectId: result.data?.templateDeployV2?.projectId,
-        templateName: template.name,
-        railwayWorkspaceId: targetWorkspace.workspaceId,
-        railwayWorkspaceKey: targetWorkspace.key,
-        railwayWorkspaceName: targetWorkspace.name,
-        railwayWorkspaceProjectCount: targetWorkspace.projectCount,
-        railwayWorkspaceMaxProjects: targetWorkspace.maxProjects
-      };
-    } catch (error) {
-      console.error("Error en deployTemplate:", error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
   },
 
   async deleteProject(projectId, workspaceKey = null) {

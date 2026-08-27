@@ -497,49 +497,6 @@ router.get('/templates', async (req, res) => {
   catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-router.post('/templates/:id/deploy', async (req, res) => {
-  const targetClientId = req.body.clientId ? sanitizeStr(req.body.clientId, 200) : null;
-  try {
-    const result = await railwayService.deployTemplate(req.params.id);
-
-    if (!result.success || !result.projectId) {
-      return res.json(result);
-    }
-
-    await supabaseService.logAction('Deploy Template', `Nuevo proyecto creado via template: ${req.params.id}`, 'proyectos', result.projectId);
-
-    if (targetClientId) {
-      await supabaseService.registerNewProjectForClient(result.projectId, targetClientId);
-      await supabaseService.logAction('Vincular Proyecto a Cliente', `Proyecto ${result.projectId} desplegado y vinculado al cliente ${targetClientId}`, 'clientes', targetClientId);
-      invalidateCache('clients');
-      return res.json(result);
-    }
-
-    const genericEmail = `generico_${result.projectId.slice(0, 6).toLowerCase()}@generico.com`;
-    const genericSubscription = await normalizeClientSubscription({ plan: 'Personalizado', abono: 0 });
-    const clientData = {
-      nombre: 'GENERICO',
-      empresa: 'GENERICO',
-      email: genericEmail,
-      telefono: null,
-      vendedor_user_id: null,
-      admin_user: genericEmail,
-      admin_pass: result.projectId.slice(0, 8),
-      ...genericSubscription
-    };
-    const newClient = await supabaseService.createClient(clientData);
-    if (newClient?.id) {
-      await supabaseService.registerNewProjectForClient(result.projectId, newClient.id);
-      await supabaseService.logAction('Crear Cliente Generico', `Cliente generado y vinculado al proyecto ${result.projectId}`, 'clientes', newClient.id);
-      invalidateCache('clients');
-    }
-    return res.json(result);
-  } catch (err) {
-    console.error('[Deploy] failed:', err.message || err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // Services
 router.patch('/services/:id/name', async (req, res) => {
   const newName = sanitizeStr(req.body.newName, 200);
